@@ -6,6 +6,17 @@ document.addEventListener("DOMContentLoaded", function() {
     const design = form.querySelector('#design');
     const activities = form.querySelector('#activities');
     const activitesCheckboxes = activities.querySelectorAll('#activities input[type="checkbox"]');
+    let total = 0;
+
+    const isValid = {
+
+        name: (input) => /^[a-zA-Z]+(?:\s[a-zA-Z]*)*$/.test(input),
+        email: (input) => /^[^@]+@[^@.]+\.[a-z]{3}$/i.test(input),
+        'cc-num': (input) => /^\d{13,16}$/.test(input),
+        zip: (input) => /^\d{5}$/.test(input),
+        cvv: (input) => /^\d{3}$/.test(input),
+          
+        }
 
     
     otherJob.setAttribute('hidden', '');
@@ -14,6 +25,8 @@ document.addEventListener("DOMContentLoaded", function() {
     form.querySelector('#payment').value = 'credit-card';
     paymentOption('credit-card');
 
+
+    // Hides or shows the other job input if the other option in job role is chosen
     function jobRole() {
         const chosenJob = job.value;
      
@@ -30,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
           
      }
 
+    //Hides or Shows the options of t-shirts that corresponds to the chosen color value
      function tShirt() {
         
          const colorOption = color.querySelectorAll('option[data-theme]');
@@ -42,6 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
          } )
      }
 
+    //Enables the color select if a design option is chosen
      function enabledColor() {
             switch(design.value) {
                 case 'Select Theme':
@@ -53,6 +68,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         
     }
+
+    // Hides / shows the div that contains the payment options.
     function paymentOption(method) {
         const payment = {
            paypal : form.querySelector('#paypal'),
@@ -70,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function() {
        }
     }
 
+    // Loops on each checkbox to add focus and blur
     activitesCheckboxes.forEach(checkbox => {
 
         checkbox.addEventListener('focus', () => {
@@ -88,13 +106,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const activitiesDate = activities.querySelectorAll('input[type = "checkbox"]');
         const value = parseInt(checkbox.dataset.cost);
         const currentDate = checkbox.dataset.dayAndTime;
-        let total = 0;
-
+        
+        // removes the not valid class on activities div when an option is chosen
         function removeNotValidCheckbox(tagname) {
             tagname.parentNode.parentNode.parentNode.classList.remove('not-valid');
             tagname.parentNode.parentNode.parentNode.lastElementChild.classList.add('hint');
         }
         
+        // Logic that checks if a checkbox is checked then calculates the value of the checkbox to add/minus from the total
         switch(checkbox.checked? 'true' : 'false'){
             case 'true':
                 total += value;
@@ -124,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
     form.addEventListener('change', (e)=> {
         const select = e.target;
         
+        // Logic that checks where the change event occurs depending on the ID of the target also performs the functions
         switch(select.id) {
             case 'design':
                 enabledColor();
@@ -151,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
         }
 
+        // Removes the not-valid class depending on the tag(select or input) if the payment credit card is not chosen
         function handlePaymentNotVal(tagname) {
 
             tagname.forEach(tags => {
@@ -167,6 +188,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
         }
 
+        // Function that removes not valid on class on change occurs
         function removeNotValidSelect(tagname) {
             tagname.previousElementSibling.classList.remove('not-valid');
             tagname.classList.remove('not-valid');
@@ -174,18 +196,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     })
 
+
+
     form.addEventListener('input', (e)=> {
         const input = e.target;
 
-        const isValid = {
-
-            name: (input) => /^[a-zA-Z]+(?:\s[a-zA-Z]*)*$/.test(input),
-            email: (input) => /^[^@]+@[^@.]+\.[a-z]{3}$/i.test(input),
-            'cc-num': (input) => /^\d{13,16}$/.test(input),
-            zip: (input) => /^\d{5}$/.test(input),
-            cvv: (input) => /^\d{3}$/.test(input),
-              
-            }
+        // object literals that returns a regex value depending on the property
+       
 
         function showValid(show, element, error) {
             switch(show? 'not-valid' : 'valid') {
@@ -202,6 +219,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
+        // checks if the input field is empty (responsive)
         function isFieldEmpty(input, label) {
 
             if(input.value === ''){
@@ -213,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-
+        // Validates the text field, also checks if it is empty.
         function validation(validator, input) {
             const text = input.value;
             const valid = validator(text);
@@ -243,24 +261,44 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     })
 
-    form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', (e) => {
         const formFields = form.querySelectorAll('input');
         const formSelect = form.querySelectorAll('select');
 
         const formInputs = [...formFields, ...formSelect];
 
+
+        // Prevents form from submitting because of error on page
         if(!isFilledCorrectly(formInputs)) e.preventDefault();
-        
+
+
+        // A function that checks if the the input field, select field is empty or input field has received
+        // an in valid regex it returns in invalid result that throws error on the tags.
         function isFilledCorrectly(property){
             let unCheckedBox = 0;
             let valid = true;
             property.forEach(props => {
-                if((props.type == 'text' || props.type == 'email') && props.value == '' && !props.hidden && !props.parentNode.parentNode.parentNode.parentNode.hidden && props.name != 'other-job-role'){
-                    props.parentNode.classList.remove('valid');
-                    props.parentNode.classList.add('not-valid');
-                    props.nextElementSibling.nextElementSibling.classList.remove('hint');
-                    valid = false;
-
+                if((props.type == 'text' || props.type == 'email') && !props.hidden && !props.parentNode.parentNode.parentNode.parentNode.hidden && props.name != 'other-job-role'){
+                    const validationMap = {
+                        'name': isValid.name,
+                        'cvv': isValid.cvv,
+                        'zip': isValid.zip,
+                        'cc-num': isValid['cc-num'],
+                        'email': isValid.email
+                    };
+                
+                    const validator = validationMap[props.id];
+                
+                    if (props.value && validator && !validator(props.value)) {
+                        props.parentNode.className = 'not-valid';
+                        props.nextElementSibling.style.display = 'block';
+                        valid = false;
+                    } else if (!props.value) {
+                        props.parentNode.classList.remove('valid');
+                        props.parentNode.classList.add('not-valid');
+                        props.nextElementSibling.nextElementSibling.classList.remove('hint');
+                        valid = false;
+                    }
                 } else if(props.type == 'checkbox' && !props.checked) {
                     unCheckedBox+= 1;
                     switch(unCheckedBox){
@@ -277,12 +315,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else if(props.name == 'other-job-role' && props.value == '' && !props.hidden){
                         props.previousElementSibling.previousElementSibling.classList.add('not-valid');
                         valid = false;
-                }
+                } 
             })
 
             return valid;
         }
-    })
+    })      
 });
 
 
